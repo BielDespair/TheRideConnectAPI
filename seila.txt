@@ -1,0 +1,4 @@
+routes -> /home /home/events /...
+controller -> respostas (200, 400, 401)
+service -> valida regra de negocio
+repository -> faz requisição pro banco
