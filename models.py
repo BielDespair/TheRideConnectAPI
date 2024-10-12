@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app import db
+from server import db
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
