@@ -11,6 +11,10 @@ from server import app, db
 def create_tables():
     db.create_all()
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({'message': 'Hello, World!'}), 200
+
 @app.route('/events', methods=['POST'])
 def create_event():
     data = request.get_json()
@@ -63,19 +67,52 @@ def handle_readings(event_id):
     
     return jsonify({'message': f'{len(readings)} leituras adicionadas com sucesso'}, 200)
 
-@app.route('/events/<int:event_id>/readings', methods=['GET'])
-def get_and_delete_readings(event_id):
+@app.route('/events/<event_id>/readings', methods=['GET'])
+def get_event_readings(event_id):
+
     event = Event.query.get(event_id)
+    
     if not event:
         return jsonify({'message': 'Event not found'}), 404
     
-    api_token = request.args.get('api_token')
+    data = request.get_json()
+    api_token = data.get('api_token')
+    
     if not api_token or api_token != event.api_token:
         return jsonify({'message': 'Token do aplicativo inválido ou ausente'}), 403
     
     readings = Readings.query.filter_by(event_id=event_id).all()
-    if not readings:
-        return jsonify({'message': 'Nenhuma leitura encontrada'}), 404
+    json = {
+        'readings': []
+    }
+    readings_ids = [reading.id for reading in readings]
+    for reading in readings:
+        if not reading.collected:
+            print(reading.collected)
+            reading_json = {
+                'tag_epc': reading.tag_epc,
+                'timestamp': reading.timestamp
+            }
+            json['readings'].append(reading_json)
     
+    for reading in readings:
+        reading.collected = 1
+    db.session.commit()
+    
+    return jsonify(json), 200
+
+@app.route('/events', methods=['GET'])
+def get_events():
+    events = Event.query.all()
+    json = {
+        'events': []
+    }
+    for event in events:
+        json['events'].append({
+            'id': event.id,
+            'name': event.name
+        })
+    return jsonify(json), 200
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

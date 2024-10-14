@@ -14,4 +14,5 @@ class Readings(db.Model):
     tag_epc = db.Column(db.String, nullable=False)
     timestamp = db.Column(db.String, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)  # Relacionamento com o evento
+    collected = db.Column(db.Integer, nullable=False, default=0)
     
